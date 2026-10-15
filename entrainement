@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athlon · Journal d'entraînement</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--bg:#e9eef2;--ink:#14212b;--mut:#5d6b78;--card:#fff;--line:#cfd8df;--acc:#2447d9;--gold:#c9a227}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1a22;--ink:#e8eef3;--mut:#8fa0ae;--card:#172530;--line:#2a3b49;--acc:#6f8cff;--gold:#e0b93c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif}
+h1,h2,h3,.big{font-family:"Barlow Condensed",Impact,sans-serif;letter-spacing:.01em;margin:0}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;justify-content:space-between;padding:20px 24px 8px;max-width:1200px;margin:auto}
+h1{font-size:44px;font-weight:800}
+header a{color:var(--acc);font-weight:600}
+main{max-width:1200px;margin:auto;padding:8px 24px 48px}
+.counters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0}
+.c{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.c .big{font-size:34px;font-weight:800;line-height:1.1}.c small{color:var(--mut)}
+.c.tot{border-color:var(--acc)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}
+button,select{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+button[aria-pressed=true],button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:focus-visible,select:focus-visible,li:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+section[hidden]{display:none}
+.act{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px}
+@media(max-width:800px){.act{grid-template-columns:1fr}}
+ul#list{list-style:none;margin:0;padding:0;max-height:640px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:6px}
+#list li{padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+#list li[aria-selected=true]{background:color-mix(in srgb,var(--acc) 14%,var(--card));border-left:4px solid var(--acc)}
+#list b{display:block}#list span{color:var(--mut);font-size:14px}
+#map{height:320px;border-radius:6px;border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px}
+.stats .big{font-size:26px;font-weight:800;display:block}.stats small{color:var(--mut)}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px;height:260px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.m{text-align:center;font-size:14px}.m svg{width:110px;height:140px}
+.m.lock svg{filter:grayscale(1);opacity:.35}.m small{display:block;color:var(--mut)}
+.shop{display:grid;grid-template-columns:260px 1fr;gap:24px}
+@media(max-width:800px){.shop{grid-template-columns:1fr}}
+#avsvg{width:220px;height:370px;background:var(--card);border:1px solid var(--line);border-radius:6px}
+.items{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 16px}
+.items button[disabled]{opacity:.4;cursor:not-allowed}
+.note{color:var(--mut);font-size:14px}
+.tier{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 18px;margin:0 8px 16px 0;border:3px solid #1a1a2e;border-radius:18px;box-shadow:6px 6px 0 #1a1a2e;color:#1a1a2e}
+.tn{width:150px}.tn h3{font:400 28px/1 "Lilita One",sans-serif}
+.tag{display:inline-block;margin-top:6px;border:2px solid #1a1a2e;border-radius:99px;background:#fff;padding:0 10px;font-size:13px;font-weight:600}
+.div{width:104px;text-align:center;font-size:13px}.div svg{width:56px;height:56px}
+.div b{display:block;font:400 15px "Lilita One",sans-serif}.div i{font-style:normal;background:#1a1a2e;color:#fff;border-radius:99px;padding:0 6px}
+.div small{display:block;font-size:11px}.div.off{opacity:.38;filter:grayscale(.6)}.div.cur{outline:3px dashed #1a1a2e;outline-offset:4px;border-radius:12px}
+.gt{margin:18px 0 8px}#med h2{margin-top:30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Athlon</h1>
+  <a href="https://lucasrouer.github.io/sport/">Retour à Athlon</a>
+</header>
+<main>
+  <p class="note" id="src"></p>
+  <div class="bar"><label>Année <select id="yr"></select></label></div>
+  <div class="counters" id="counters"></div>
+  <div class="bar" role="tablist">
+    <button data-t="act" class="on">Activités</button><button data-t="med">Médailles</button><button data-t="av">Avatar &amp; items</button>
+  </div>
+ 
+  <section id="act" class="act">
+    <div>
+      <div class="bar"><select id="sp" aria-label="Sport"><option value="">Tous les sports</option></select></div>
+      <ul id="list" aria-label="Activités, de la plus récente à la plus ancienne"></ul>
+    </div>
+    <div>
+      <div id="map" aria-label="Carte du parcours"></div>
+      <h2 id="atitle" style="margin-top:12px">Choisis une activité</h2>
+      <div class="stats" id="stats"></div>
+      <div class="chart"><canvas id="ch"></canvas></div>
+    </div>
+  </section>
+ 
+  <section id="med" hidden>
+    <div class="bar"><button data-sc="all" class="on">Carrière</button><button data-sc="yr">Année choisie</button><span class="note">Périmètre des ligues, du volume et des séries</span></div>
+    <h2>Ligues d'endurance</h2>
+    <div class="bar"><label>Distance <select id="ld"></select></label><b id="lcur"></b></div>
+    <div id="ladder"></div>
+    <h2>Courses emblématiques</h2><div id="cat"></div>
+    <h2>Mes finishers</h2><div class="grid" id="races"></div>
+    <h2>Volume, assiduité, dénivelé</h2><div id="ladders"></div>
+    <h2>Conditions &amp; originalité</h2><div class="grid" id="badges"></div>
+  </section>
+ 
+  <section id="av" hidden class="shop">
+    <div><svg id="avsvg" viewBox="0 0 120 200" width="220" height="370" role="img" aria-label="Ton avatar"></svg></div>
+    <div id="equip"></div>
+  </section>
+</main>
+ 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ================= CONFIGURATION ================= */
+const CONFIG = {
+  DEMO: true,            // passe à false une fois tes accès Strava renseignés
+  CLIENT_ID: '',         // Strava > Réglages > Mon API
+  CLIENT_SECRET: '',     // attention : visible dans le code si le site est public
+  REFRESH_TOKEN: ''      // jeton obtenu avec le scope activity:read_all
+};
+/* Séances saisies à la main (sans GPS, anciens résultats...) */
+const MANUAL = [
+  // {id:'m1', name:'Semi de Remich 2022', sport:'Run', date:'2022-10-02T10:00:00', distance:21097, time:0, elev:0, race:true}
+];
+/* Forcer une médaille de course si Strava ne la retrouve pas (ids ci-dessous) */
+const FORCE_MEDALS = [];
+ 
+/* ================= COURSES (médailles) ================= */
+const RACES = [
+ {id:'saintelyon24',n:'SaintéLyon',y:2024,k:/sainte.?lyon/,e:'🌙',h:240},
+ {id:'paris23',n:'Marathon de Paris',y:2023,k:/marathon de paris/,e:'🗼',h:350},
+ {id:'remich22',n:'Semi route du vin, Remich',y:2022,k:/remich|route du vin/,e:'🍇',h:290},
+ {id:'runinlyon24',n:'10 km RuninLyon',y:2024,k:/runinlyon|run in lyon/,e:'🦁',h:25},
+ {id:'stjacques22',n:'Maratrail Saint-Jacques',y:2022,k:/saint.?jacques/,e:'🐚',h:200},
+ {id:'escalade23',n:"Course de l'Escalade",y:2023,k:/escalade/,e:'🍲',h:5},
+ {id:'unicef25',n:'10 km de l\'Unicef',y:2025,k:/unicef/,e:'🥐',h:45},
+ {id:'alpillette25',n:"Trail de l'Alpillette",y:2025,k:/alpillette/,e:'🫒',h:110},
+ {id:'hauteseille25',n:'Trail Haute-Seille',y:2025,k:/seille/,e:'🌲',h:150},
+ {id:'villeneuve26',n:'Urbain trail Villeneuve',y:2026,k:/villeneuve/,e:'🏰',h:30},
+ {id:'lutnight21',n:'Lyon Urban Trail by Night',y:2021,k:/urban trail|lyon.*night/,e:'🌃',h:260},
+ {id:'hannibal22',n:'Raid Hannibal',y:2022,k:/hannibal/,e:'🐘',h:20},
+ {id:'hannibal23',n:'Raid Hannibal',y:2023,k:/hannibal/,e:'🐘',h:20},
+ {id:'hannibal24',n:'Raid Hannibal',y:2024,k:/hannibal/,e:'🐘',h:20},
+ {id:'bol24',n:"Bol d'air",y:2024,k:/bol d.?air/,e:'🌬️',h:185}
+];
+ 
+/* ================= OUTILS ================= */
+const $=s=>document.querySelector(s);
+const yOf=a=>+a.date.slice(0,4), hOf=a=>+a.date.slice(11,13);
+const fmtT=s=>{const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h} h ${String(m).padStart(2,'0')}`:`${m} min`};
+const pace=(d,t)=>{if(!d||!t)return'–';const p=t/(d/1000);return`${Math.floor(p/60)}:${String(Math.floor(p%60)).padStart(2,'0')} /km`};
+const km=d=>(d/1000).toFixed(1);
+function dec(s){let i=0,la=0,ln=0,o=[];while(i<s.length){for(const k of[0,1]){let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);const d=r&1?~(r>>1):r>>1;k?ln+=d:la+=d}o.push([la/1e5,ln/1e5])}return o}
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+ 
+/* ================= DONNÉES ================= */
+let TOKEN='', ACTS=[];
+async function stravaLoad(){
+  const t=await(await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({client_id:CONFIG.CLIENT_ID,client_secret:CONFIG.CLIENT_SECRET,refresh_token:CONFIG.REFRESH_TOKEN,grant_type:'refresh_token'})})).json();
+  TOKEN=t.access_token;let all=[],p=1;
+  for(;;){const r=await(await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=200&page=${p++}`,{headers:{Authorization:'Bearer '+TOKEN}})).json();
+    if(!Array.isArray(r)||!r.length)break;all.push(...r)}
+  return all.map(a=>({id:a.id,name:a.name,sport:a.sport_type,date:a.start_date_local,distance:a.distance,time:a.moving_time,
+    elev:a.total_elevation_gain,hrAvg:a.average_heartrate,hrMax:a.max_heartrate,poly:a.map&&a.map.summary_polyline,race:a.workout_type===1,gear:a.gear_id,temp:a.average_temp,commute:a.commute}));
+}
+async function streams(a){
+  if(a.st)return a.st;
+  if(a.demo)return a.st=demoStream(a);
+  if(!TOKEN)return null;
+  const r=await(await fetch(`https://www.strava.com/api/v3/activities/${a.id}/streams?keys=distance,heartrate,altitude,velocity_smooth,latlng&key_by_type=true`,{headers:{Authorization:'Bearer '+TOKEN}})).json();
+  return a.st={d:r.distance&&r.distance.data,hr:r.heartrate&&r.heartrate.data,alt:r.altitude&&r.altitude.data,v:r.velocity_smooth&&r.velocity_smooth.data,ll:r.latlng&&r.latlng.data};
+}
+/* --- données de démonstration --- */
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function demoStream(a){
+  const n=80,d=[],hr=[],alt=[],v=[],ll=[],base=a.distance/a.time,R=0.006+a.distance/4e6,c=a.c;
+  for(let i=0;i<n;i++){const f=i/(n-1),ang=f*6.283;d.push(f*a.distance);hr.push(Math.round(142+22*f+8*Math.sin(f*9)));
+    alt.push(60+a.elev/2*(1+Math.sin(f*6)));v.push(base*(1+.12*Math.sin(f*7)));
+    ll.push([c[0]+R*Math.sin(ang)*(1+.15*Math.sin(ang*3)),c[1]+R*1.5*(Math.cos(ang)-1)]);}
+  return{d,hr,alt,v,ll};
+}
+function demoData(){
+  const out=[],sports=['Run','Run','Run','TrailRun','Ride','Swim'];
+  for(let i=0;i<46;i++){const y=2021+Math.floor(i/9),mo=1+Math.floor(rnd()*12),dy=1+Math.floor(rnd()*27),hh=Math.floor(5+rnd()*15);
+    const sp=sports[Math.floor(rnd()*6)],dist=(sp==='Ride'?30000:sp==='Swim'?1800:5000)+rnd()*(sp==='Ride'?40000:sp==='Swim'?1500:14000);
+    out.push({id:'d'+i,demo:true,name:'Sortie démo '+(i+1),sport:sp,date:`${y}-${String(mo).padStart(2,'0')}-${String(dy).padStart(2,'0')}T${String(hh).padStart(2,'0')}:00:00`,
+      distance:dist,time:dist/(sp==='Ride'?7.5:sp==='Swim'?.6:3.1),elev:Math.round(rnd()*(sp==='TrailRun'?900:120)),hrAvg:140+Math.round(rnd()*25),hrMax:175+Math.round(rnd()*15),c:[48.835+rnd()*.01,2.43+rnd()*.01]});}
+  out.push({id:'dr1',demo:true,name:'Marathon de Paris 2023',sport:'Run',date:'2023-04-02T09:00:00',distance:42195,time:14400,elev:150,hrAvg:158,hrMax:182,race:true,c:[48.86,2.33]});
+  return out;
+}
+ 
+/* ================= STATS & RÉCOMPENSES ================= */
+function raceDone(r){return FORCE_MEDALS.includes(r.id)||ACTS.some(a=>yOf(a)===r.y&&(a.race||a.demo)&&r.k.test(nrm(a.name)))}
+function totals(){
+  const s={km:0,h:0,n:ACTS.length,maxKm:0,maxElev:0,night:0,early:0};
+  ACTS.forEach(a=>{s.km+=a.distance/1000;s.h+=a.time/3600;s.maxKm=Math.max(s.maxKm,a.distance/1000);s.maxElev=Math.max(s.maxElev,a.elev||0);
+    if(hOf(a)>=22||hOf(a)<5)s.night++;if(hOf(a)<7)s.early++});
+  s.races=RACES.filter(raceDone).length;return s;
+}
+const ITEMS=[
+ {id:'cap',slot:'head',n:'Casquette',t:'50 km cumulés',f:s=>s.km>=50},
+ {id:'band',slot:'head',n:'Bandeau',t:'10 activités',f:s=>s.n>=10},
+ {id:'beanie',slot:'head',n:'Bonnet de nuit',t:'1 sortie nocturne',f:s=>s.night>=1},
+ {id:'tee',slot:'top',n:'T-shirt technique',t:'Offert',f:()=>true},
+ {id:'jersey',slot:'top',n:'Maillot finisher',t:'1 course officielle',f:s=>s.races>=1},
+ {id:'vest',slot:'top',n:'Gilet de trail',t:'1 000 m D+ en une sortie',f:s=>s.maxElev>=1000},
+ {id:'shoes',slot:'feet',n:'Baskets',t:'Offert',f:()=>true},
+ {id:'gold',slot:'feet',n:'Pointes dorées',t:'500 km cumulés',f:s=>s.km>=500},
+ {id:'watch',slot:'acc',n:'Montre GPS',t:'20 h d\'entraînement',f:s=>s.h>=20},
+ {id:'shades',slot:'acc',n:'Lunettes de soleil',t:'1 sortie avant 7 h',f:s=>s.early>=1},
+ {id:'neck',slot:'acc',n:'Collier de médailles',t:'5 médailles de course',f:s=>s.races>=5}
+];
+const SLOTS={head:'Tête',top:'Haut',feet:'Pieds',acc:'Accessoires'};
+ 
+/* ================= RENDUS ================= */
+function medal(e,h,label,sub,ok){
+  return `<div class="m ${ok?'':'lock'}"><svg viewBox="0 0 110 140"><path d="M32 0h16l12 38H44zM78 0H62L50 38h16z" fill="hsl(${h} 70% 45%)"/>
+  <circle cx="55" cy="88" r="44" fill="${ok?'#c9a227':'#999'}"/><circle cx="55" cy="88" r="36" fill="hsl(${h} 60% 92%)" stroke="hsl(${h} 70% 40%)" stroke-width="3"/>
+  <text x="55" y="101" font-size="34" text-anchor="middle">${ok?e:'?'}</text></svg><b>${label}</b><small>${sub}</small></div>`;
+}
+function renderCounters(){
+  const y=$('#yr').value,t=totals(),A=ACTS.filter(a=>String(yOf(a))===y);
+  const k=A.reduce((s,a)=>s+a.distance,0),d=A.reduce((s,a)=>s+a.time,0);
+  $('#counters').innerHTML=`<div class="c"><small>Kilomètres ${y}</small><div class="big">${Math.round(k/1000).toLocaleString('fr')} km</div></div>
+  <div class="c"><small>Durée ${y}</small><div class="big">${fmtT(d)}</div></div>
+  <div class="c tot"><small>Kilomètres au total</small><div class="big">${Math.round(t.km).toLocaleString('fr')} km</div></div>
+  <div class="c tot"><small>Durée au total</small><div class="big">${fmtT(t.h*3600)}</div></div>`;
+}
+/* ================= MÉDAILLES : RÉGLAGES MANUELS ================= */
+const FLAGS=[];   // médailles validées à la main, ex: ['rain','neg','pacer']
+const PLACES={};  // classement par course, ex: {saintelyon24:12, 'Marathon de Paris':480}
+const nrm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+let SC='all';
+const scopeActs=()=>SC==='yr'?ACTS.filter(a=>String(yOf(a))===$('#yr').value):ACTS;
+const placeLbl=p=>p<=1?'🥇 Top 1':p<=3?'Podium (Top 3)':p<=5?'Top 5':p<=10?'Top 10':'Finisher';
+ 
+/* ================= LIGUES ================= */
+const TR=[['Fer','Dossard'],['Bronze','Chrono'],['Argent','Médaille finisher'],['Vermeil','Roue'],['Or','Coupe'],['Platine','Vague'],['Diamant','Sommet'],['Master',"Ligne d'arrivée"],['Grand Maître','Ailes et flamme'],['Challenger','Couronne']];
+const BG=['#ffd060','#7fddf2','#ff8faf','#8ee89a','#74beff','#ffa84a','#ff7db8','#ffdd66','#62e6bc','#7f5cfa'];
+const RO=['V','IV','III','II','I'];
+const G='<g stroke="#1a1a2e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">';
+const IC=[
+`${G}<rect x="12" y="8" width="36" height="34" rx="6" fill="#8d939c"/><rect x="20" y="18" width="20" height="12" rx="2" fill="#e8ecef"/><rect x="24" y="42" width="12" height="9" fill="#8d939c"/></g>`,
+`${G}<rect x="26" y="4" width="8" height="8" fill="#8a4b1b"/><circle cx="30" cy="32" r="19" fill="#f0b07a"/><path d="M30 32V21M30 32l8 5" fill="none"/></g>`,
+`${G}<path d="M17 3l13 21 13-21z" fill="#8a93a3"/><circle cx="30" cy="38" r="17" fill="#c9ced8"/><path d="M30 28l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" fill="#8a93a3"/></g>`,
+`${G}<circle cx="30" cy="30" r="21" fill="#fbd49a"/><path d="M30 9v42M9 30h42M15 15l30 30M45 15L15 45" fill="none"/></g>`,
+`${G}<path d="M17 6h26v15a13 13 0 0 1-26 0z" fill="#ffc933"/><path d="M17 11h-6c0 9 3 12 7 12M43 11h6c0 9-3 12-7 12" fill="none"/><rect x="26" y="33" width="8" height="10" fill="#e0a010"/><rect x="18" y="43" width="24" height="8" rx="2" fill="#d98a10"/></g>`,
+`${G}<path d="M9 7h42v23c0 12-12 20-21 24C21 50 9 42 9 30z" fill="#6fe0d2"/><path d="M17 22q6-6 13 0t13 0M17 34q6-6 13 0t13 0" fill="none" stroke="#d6fbf6"/></g>`,
+`${G}<path d="M30 5l22 15-22 37L8 20z" fill="#3fb2ff"/><path d="M8 20h44M20 20l10 37 10-37" fill="none"/></g>`,
+`${G}<rect x="11" y="5" width="5" height="46" fill="#6b3fb0"/><path d="M16 7h32l-8 11 8 11H16z" fill="#e5d0ff"/><rect x="6" y="49" width="16" height="5" rx="2" fill="#a56cf0"/></g>`,
+`${G}<path d="M6 12l14 6v14L6 32zM54 12L40 18v14l14 0z" fill="#ffc4c4"/><path d="M16 6h28v26c0 10-9 17-14 20-5-3-14-10-14-20z" fill="#ef4444"/><ellipse cx="30" cy="30" rx="5" ry="8" fill="#ffc4c4"/></g>`,
+`${G}<circle cx="30" cy="34" r="22" fill="#b79df0" stroke="none"/><path d="M20 12l4-7 6 6 6-6 4 7z" fill="#fff3b0"/><path d="M19 14h22v12a11 11 0 0 1-22 0z" fill="#ffc933"/><rect x="26" y="37" width="8" height="8" fill="#e0a010"/><rect x="19" y="45" width="22" height="7" rx="2" fill="#2f4fd0"/></g>`
+];
+/* Seuils de chaque division, de Fer IV (k=1) à Challenger I (k=49), arrondis à la seconde (tableau fourni). Fer V = finisher. */
+const T=s=>s.split(' ').map(x=>x.split(':').reduce((a,v)=>a*60+ +v,0));
+const LG=[
+ {n:'5 km route',d:5000,r:T('43:35 42:13 40:54 39:38 38:25 37:14 36:06 35:00 33:57 32:56 31:58 31:01 30:06 29:14 28:23 27:34 26:47 26:01 25:18 24:35 23:55 23:15 22:38 22:01 21:26 20:52 20:20 19:48 19:18 18:49 18:21 17:54 17:28 17:03 16:39 16:16 15:54 15:33 15:13 14:54 14:36 14:18 14:02 13:46 13:32 13:18 13:06 12:56 12:49')},
+ {n:'10 km route',d:10000,r:T('1:27:14 1:24:34 1:21:59 1:19:31 1:17:07 1:14:49 1:12:35 1:10:26 1:08:22 1:06:22 1:04:27 1:02:35 1:00:47 59:04 57:24 55:47 54:14 52:44 51:17 49:53 48:33 47:15 46:00 44:48 43:38 42:30 41:26 40:23 39:23 38:25 37:29 36:35 35:44 34:54 34:06 33:20 32:36 31:54 31:14 30:35 29:59 29:24 28:51 28:20 27:51 27:24 27:00 26:39 26:24')},
+ {n:'Semi-marathon',d:21097.5,r:T('3:08:57 3:03:08 2:57:32 2:52:08 2:46:55 2:41:53 2:37:02 2:32:21 2:27:51 2:23:30 2:19:18 2:15:15 2:11:21 2:07:35 2:03:58 2:00:28 1:57:05 1:53:49 1:50:41 1:47:39 1:44:44 1:41:55 1:39:12 1:36:34 1:34:03 1:31:37 1:29:16 1:27:01 1:24:50 1:22:44 1:20:43 1:18:46 1:16:54 1:15:06 1:13:23 1:11:44 1:10:08 1:08:37 1:07:10 1:05:46 1:04:27 1:03:11 1:02:00 1:00:53 59:50 58:52 57:59 57:14 56:42')},
+ {n:'Marathon',d:42195,r:T('6:18:26 6:07:16 5:56:29 5:46:05 5:36:02 5:26:20 5:16:58 5:07:56 4:59:12 4:50:46 4:42:37 4:34:45 4:27:09 4:19:49 4:12:44 4:05:54 3:59:18 3:52:55 3:46:45 3:40:48 3:35:04 3:29:31 3:24:10 3:19:00 3:14:01 3:09:12 3:04:34 3:00:05 2:55:46 2:51:36 2:47:36 2:43:44 2:40:01 2:36:26 2:32:59 2:29:41 2:26:30 2:23:27 2:20:33 2:17:45 2:15:06 2:12:34 2:10:11 2:07:56 2:05:49 2:03:52 2:02:07 2:00:35 1:59:30')}
+];
+const hms=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s%60).padStart(2,'0')};
+/* Record estimé : meilleure sortie « Run » proche de la distance, ramenée à la distance exacte (approximation) */
+function pr(d,A){let b=null;for(const a of A)if(a.sport==='Run'&&a.distance>=d*.98&&a.distance<=d*1.06){const t=a.time*d/a.distance;if(b===null||t<b)b=t}return b}
+function renderLeague(){
+  const L=LG[+$('#ld').value],t=pr(L.d,scopeActs()),k=t==null?-1:L.r.reduce((k,x,i)=>t<=x?i+1:k,0);
+  $('#lcur').textContent=t==null?'Aucun chrono sur cette distance pour ce périmètre.':`Record estimé ${hms(t)} : ${TR[k/5|0][0]} ${RO[k%5]}`;
+  $('#ladder').innerHTML=TR.map((tr,i)=>`<div class="tier" style="background:${BG[i]}"><div class="tn"><h3>${tr[0]}</h3><span class="tag">${tr[1]}</span></div>`+
+    RO.map((r,j)=>{const q=i*5+j;return `<div class="div ${q<=k?'':'off'} ${q===k?'cur':''}"><svg viewBox="0 0 60 60">${IC[i]}</svg><b>${tr[0]} <i>${r}</i></b><span>${'★'.repeat(j+1)+'☆'.repeat(4-j)}</span><small>${q?'≤ '+hms(L.r[q-1]):'Finisher'}</small></div>`}).join('')+'</div>').join('');
+}
+ 
+/* ================= COURSES EMBLÉMATIQUES (nom reconnu, toutes années) ================= */
+const CAT=[
+ ['Temples de la route',200,[['Tokyo','tokyo','🗼'],['Boston','boston','🫘'],['Londres','london|londres','🎡'],['Berlin','berlin','🐻'],['Chicago','chicago','🌬️'],['New York','new york|nyc','🗽'],['Sydney','sydney','🦘'],['Marathon de Paris','marathon de paris','🥖'],['Semi de Paris','semi de paris','🥐'],['La Rochelle','la rochelle','⚓'],['Florence','florence|firenze','🌷'],['Rome','marathon.*rome|rome marathon','🏛️'],['Valence','valencia|valence','🍊'],['10 km Paris Centre','paris centre','🏙️'],['10 km Tour Eiffel','tour eiffel','🗼'],['Marvejols-Mende','marvejols','⛰️'],['Paris-Versailles','paris.?versailles','👑']]],
+ ['Sommets du trail',130,[['UTMB','utmb','🏔️'],['CCC','ccc','🥾'],['OCC','occ','🥾'],['PTL','ptl','🧭'],['TDS','tds','🌄'],['SaintéLyon','saintelyon','🌙'],['Diagonale des Fous','diagonale|grand raid de la reunion','🌋'],['Templiers','templiers','⚔️'],['Ecotrail Paris','ecotrail','🌳'],['Trail du Ventoux','ventoux','🚴'],['Grand Raid des Pyrénées','pyrenees|grp','🐻'],['Western States','western states','🐎'],['Hardrock 100','hardrock','🪨'],['Tor des Géants','tor des geants','🗻'],['Zegama-Aizkorri','zegama','🐂'],['Sierre-Zinal','sierre.?zinal','🏔️']]]
+];
+const MAJ=['tokyo','boston','london|londres','berlin','chicago','new york|nyc','sydney'];
+const seen=rx=>ACTS.some(a=>new RegExp(rx).test(nrm(a.name)));
+ 
+/* ================= VOLUME, ASSIDUITÉ, DÉNIVELÉ ================= */
+const LD=[
+ ['Kilométrage','📏','km',[[1000,'Le Premier Mille'],[2500,"La Traversée de l'Europe"],[5000,'Paris–New York'],[10000,'Quart de Tour du Monde'],[20000,"L'Équateur à mi-parcours"],[40075,'Tour du Monde à Pied']],[[500,'Régulier'],[1000,'Club des 1k'],[2000,'Passionné'],[3000,'Forçat de la Route'],[4000,"Bête d'Entraînement"]],' km'],
+ ['Distance max en une sortie','🏃','maxKm',[[10],[15],[21.1,'Semi'],[30],[42.2,'Marathon'],[50,"L'Entrée dans l'Ultra"],[80.5,'50 Miles'],[100,'Le Siècle de la Route'],[161,'Le Mur des 100 Miles'],[200],[300,'Ultra-Endurance Extrême']],0,' km'],
+ ['Nombre de sorties','🗓️','n',[[100],[250],[500],[1000],[2500],[5000]],[[52,'Une fois par semaine'],[100,'Tous les 3-4 jours'],[180,'Un jour sur deux'],[250,'Quotidien ou presque']],' sorties'],
+ ["Séries de jours d'affilée",'🔥','streak',[[7,'Semaine de Choc'],[30,'Un mois non-stop'],[365,'Run Streak Parfait']],null,' jours'],
+ ['Dénivelé positif cumulé','⛰️','elev',[[8849,"Everest de la Course"],[20000,"L'Alpiniste"],[50000,'Chasseur de Sommets'],[100000,'Chasseur de Sommets II']],0,' m D+'],
+ ['D+ max en une sortie','🧗','maxElev',[[1000,'Le Kilomètre Vertical'],[2000,'La Haute Montagne'],[4000,'4 000 m D+'],[8849,'Everesting']],0,' m D+']
+];
+function MT(A){
+  const m={km:0,n:A.length,elev:0,maxKm:0,maxElev:0,streak:0};
+  A.forEach(a=>{m.km+=a.distance/1000;m.elev+=a.elev||0;m.maxKm=Math.max(m.maxKm,a.distance/1000);m.maxElev=Math.max(m.maxElev,a.elev||0)});
+  let c=0,p=null;[...new Set(A.map(a=>a.date.slice(0,10)))].sort().forEach(d=>{c=p&&Date.parse(d)-Date.parse(p)===864e5?c+1:1;p=d;m.streak=Math.max(m.streak,c)});
+  return m;
+}
+const CD=[
+ ['night','Night Owl','🦉','15 km+ entre 22 h et 5 h',A=>A.some(a=>a.distance>=15e3&&(hOf(a)>=22||hOf(a)<5))],
+ ['early','Early Bird','🌅','10 km+ avant 7 h',A=>A.some(a=>a.distance>=1e4&&hOf(a)<7)],
+ ['frost','Givre & Neige','❄️','Sortie sous 0 °C',A=>A.some(a=>a.temp<0)],
+ ['heat','Canicule','🥵','Sortie au-dessus de 30 °C',A=>A.some(a=>a.temp>30)],
+ ['rain','Diluvien','🌧️','1 h+ sous la pluie'],['neg','Negative Split','📉','2e moitié plus rapide'],
+ ['exact','Le Réveil-Matin','⏰','Allure cible à ±2 s/km'],['cons','Consistency Master','🧘','4 semaines au même volume ±5 %'],
+ ['explo','Explorer','🗺️','100 communes ou quartiers'],['trav','Le Voyageur','🌍','10 km+ dans 3 pays'],
+ ['cap','Capitale Run','🏛️','Marathon ou semi en capitale européenne'],['pacer','Pacer Dévoué','🤝','Meneur d\'allure ou ami sur son PR'],
+ ['comm','Commuter','🚲','50 trajets domicile-travail',A=>A.filter(a=>a.commute).length>=50],['shoe','Légende des Baskets','👟','800 km sur une paire']
+];
+function renderMedals(){
+  renderLeague();
+  const A=scopeActs(),m=MT(A);
+  $('#cat').innerHTML=CAT.map(([g,h,L])=>`<h3 class="gt">${g}</h3><div class="grid">`+L.map(([n,rx,e])=>{const ok=seen(rx),p=PLACES[n];return medal(e,h,n,ok?(p?placeLbl(p):'Finisher'):'À courir',ok)}).join('')+'</div>').join('')+
+    `<h3 class="gt">Major Hunter</h3><div class="grid">`+[6,7].map(c=>medal('⭐',45,c===6?'Six Star Finisher':'Seven Star Finisher',MAJ.filter(seen).length+' / '+c+' Majors',MAJ.filter(seen).length>=c)).join('')+'</div>';
+  $('#races').innerHTML=RACES.map(r=>{const ok=raceDone(r),p=PLACES[r.id];return medal(r.e,r.h,r.n,r.y+(ok&&p?' · '+placeLbl(p):''),ok)}).join('');
+  $('#ladders').innerHTML=LD.map(([t,e,k,th,an,u],gi)=>{const L=SC==='yr'?(an===0?th:an):th;if(!L)return '';
+    return `<h3 class="gt">${t}</h3><div class="grid">`+L.map(([v,l])=>medal(e,gi*55,l||v.toLocaleString('fr')+u,l?v.toLocaleString('fr')+u:'',m[k]>=v)).join('')+'</div>'}).join('');
+  $('#badges').innerHTML=CD.map(([id,n,e,t,f],i)=>medal(e,i*26,n,t,f?f(A):FLAGS.includes(id))).join('');
+}
+document.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{SC=b.dataset.sc;document.querySelectorAll('[data-sc]').forEach(x=>x.classList.toggle('on',x===b));renderMedals()});
+$('#ld').onchange=renderLeague;
+ 
+/* --- avatar --- */
+let AV=store.get('athlon_av',{g:'m',head:'',top:'tee',feet:'shoes',acc:[]});
+const PART={
+ cap:'<path d="M38 36a22 22 0 0 1 44 0z" fill="#d63a3a"/><rect x="58" y="33" width="34" height="5" rx="2" fill="#a82a2a"/>',
+ band:'<rect x="38" y="29" width="44" height="7" fill="#2447d9"/>',
+ beanie:'<path d="M38 34a22 22 0 0 1 44 0z" fill="#2c3e50"/><circle cx="60" cy="14" r="5" fill="#2c3e50"/>',
+ tee:'<rect x="40" y="66" width="40" height="58" rx="8" fill="#4a90d9"/>',
+ jersey:'<rect x="40" y="66" width="40" height="58" rx="8" fill="#e8b923"/><rect x="40" y="88" width="40" height="8" fill="#14212b"/>',
+ vest:'<rect x="40" y="66" width="40" height="58" rx="8" fill="#2e7d5b"/><rect x="48" y="66" width="6" height="50" fill="#1b4d38"/><rect x="66" y="66" width="6" height="50" fill="#1b4d38"/>',
+ shoes:'<ellipse cx="48" cy="190" rx="14" ry="7" fill="#e8e8e8" stroke="#555"/><ellipse cx="72" cy="190" rx="14" ry="7" fill="#e8e8e8" stroke="#555"/>',
+ gold:'<ellipse cx="48" cy="190" rx="14" ry="7" fill="#e0b93c" stroke="#8a6d10"/><ellipse cx="72" cy="190" rx="14" ry="7" fill="#e0b93c" stroke="#8a6d10"/>',
+ watch:'<rect x="24" y="108" width="9" height="7" rx="2" fill="#14212b"/>',
+ shades:'<rect x="46" y="38" width="28" height="7" rx="3" fill="#14212b"/>',
+ neck:'<path d="M50 66q10 18 20 0" fill="none" stroke="#c9a227" stroke-width="2"/><circle cx="60" cy="84" r="5" fill="#c9a227"/>'
+};
+function renderAvatar(){
+  const f=AV.g==='f',hair=f?'<path d="M36 40a24 24 0 0 1 48 0v34h-8V44H44v30h-8z" fill="#5a3a22"/>':'<path d="M38 36a22 22 0 0 1 44 0z" fill="#5a3a22"/>';
+  $("#avsvg").innerHTML=`<rect x="44" y="124" width="12" height="60" fill="#2b3a55"/><rect x="64" y="124" width="12" height="60" fill="#2b3a55"/>
+  <rect x="26" y="70" width="10" height="46" rx="5" fill="#f0c9a0"/><rect x="84" y="70" width="10" height="46" rx="5" fill="#f0c9a0"/>
+  ${PART[AV.top]}${PART[AV.feet]}<circle cx="60" cy="42" r="22" fill="#f0c9a0"/>${hair}
+  <circle cx="52" cy="44" r="2" fill="#14212b"/><circle cx="68" cy="44" r="2" fill="#14212b"/><path d="M53 54q7 5 14 0" fill="none" stroke="#14212b" stroke-width="2"/>
+  ${AV.head?PART[AV.head]:''}${AV.acc.map(i=>PART[i]).join('')}`;
+}
+function renderEquip(){
+  const t=totals();
+  let h=`<div class="items"><button aria-pressed="${AV.g==='m'}" data-g="m">Homme</button><button aria-pressed="${AV.g==='f'}" data-g="f">Femme</button></div>`;
+  for(const s in SLOTS){h+=`<h3>${SLOTS[s]}</h3><div class="items">`+ITEMS.filter(i=>i.slot===s).map(i=>{
+    const ok=i.f(t),on=s==='acc'?AV.acc.includes(i.id):AV[s]===i.id;
+    return `<button data-i="${i.id}" data-s="${s}" aria-pressed="${on}" ${ok?'':'disabled'} title="${ok?'':'À débloquer : '+i.t}">${i.n}${ok?'':' 🔒'}</button>`}).join('')+'</div>'}
+  $('#equip').innerHTML=h;
+}
+$('#equip').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.g)AV.g=b.dataset.g;
+  else{const{i,s}=b.dataset;if(s==='acc')AV.acc=AV.acc.includes(i)?AV.acc.filter(x=>x!==i):[...AV.acc,i];
+    else if(s==='head')AV.head=AV.head===i?'':i;else AV[s]=i}
+  store.set('athlon_av',AV);renderAvatar();renderEquip();
+});
+ 
+/* --- activités, carte, graphique --- */
+let map,line,mark,chart,cur;
+function renderList(){
+  const sp=$('#sp').value;
+  $('#list').innerHTML=ACTS.filter(a=>!sp||a.sport===sp).map(a=>`<li tabindex="0" data-id="${a.id}" aria-selected="${cur&&cur.id===a.id}"><b>${a.name}</b><span>${a.date.slice(0,10)} · ${a.sport} · ${km(a.distance)} km · ${fmtT(a.time)}</span></li>`).join('')||'<li>Aucune activité.</li>';
+}
+async function show(id){
+  cur=ACTS.find(a=>String(a.id)===id);if(!cur)return;renderList();
+  $('#atitle').textContent=cur.name;
+  $('#stats').innerHTML=[[km(cur.distance)+' km','Distance'],[fmtT(cur.time),'Durée'],[pace(cur.distance,cur.time),'Allure moy.'],
+    [cur.hrAvg?Math.round(cur.hrAvg)+' bpm':'–','FC moyenne'],[cur.hrMax?Math.round(cur.hrMax)+' bpm':'–','FC max'],[Math.round(cur.elev||0)+' m','Dénivelé +']]
+    .map(([v,l])=>`<div><span class="big">${v}</span><small>${l}</small></div>`).join('');
+  if(line){map.removeLayer(line);line=null}
+  if(mark){map.removeLayer(mark);mark=null}
+  const st=await streams(cur).catch(()=>null);
+  const pts=st&&st.ll||(cur.poly?dec(cur.poly):null);
+  if(pts&&pts.length){line=L.polyline(pts,{color:'#2447d9',weight:4}).addTo(map);map.fitBounds(line.getBounds(),{padding:[20,20]});mark=L.circleMarker(pts[0],{radius:6,color:'#d63a3a'}).addTo(map)}
+  if(chart)chart.destroy();
+  if(!st||!st.d){chart=null;return}
+  const x=st.d.map(v=>(v/1000).toFixed(2)),ds=[];
+  if(st.alt)ds.push({label:'Altitude (m)',data:st.alt,yAxisID:'a',fill:true,borderColor:'#8a9aa8',backgroundColor:'#8a9aa844',pointRadius:0});
+  if(st.hr)ds.push({label:'FC (bpm)',data:st.hr,yAxisID:'h',borderColor:'#d63a3a',pointRadius:0});
+  if(st.v)ds.push({label:'Allure (min/km)',data:st.v.map(v=>v>.3?16.667/v:null),yAxisID:'p',borderColor:'#2447d9',pointRadius:0});
+  chart=new Chart($('#ch'),{type:'line',data:{labels:x,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    onHover:(e,el)=>{if(el.length&&mark&&pts[el[0].index])mark.setLatLng(pts[el[0].index])},
+    scales:{x:{title:{display:true,text:'km'},ticks:{maxTicksLimit:8}},a:{display:false},h:{position:'left',title:{display:true,text:'bpm'}},
+      p:{position:'right',reverse:true,min:3,max:9,title:{display:true,text:'min/km'},grid:{drawOnChartArea:false}}}}});
+}
+$('#list').addEventListener('click',e=>{const li=e.target.closest('li');li&&li.dataset.id&&show(li.dataset.id)});
+$('#list').addEventListener('keydown',e=>{if(e.key==='Enter'){const li=e.target.closest('li');li&&li.dataset.id&&show(li.dataset.id)}});
+$('#sp').onchange=renderList;$('#yr').onchange=()=>{renderCounters();renderMedals()};
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));
+  ['act','med','av'].forEach(id=>document.querySelector('section#'+id).hidden=id!==b.dataset.t);
+  if(b.dataset.t==='act')map.invalidateSize();
+});
+ 
+/* ================= DÉMARRAGE ================= */
+(async()=>{
+  map=L.map('map').setView([48.85,2.35],11);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+  try{ACTS=CONFIG.DEMO?demoData():await stravaLoad()}catch(err){ACTS=demoData();CONFIG.DEMO=true;$('#src').textContent='Connexion Strava impossible, affichage des données de démonstration.'}
+  ACTS=ACTS.concat(MANUAL).sort((a,b)=>b.date.localeCompare(a.date));
+  if(CONFIG.DEMO&&!$('#src').textContent)$('#src').textContent='Mode démonstration : les activités affichées sont fictives. Renseigne CONFIG pour charger Strava.';
+  const years=[...new Set(ACTS.map(yOf))].sort((a,b)=>b-a);
+  $('#yr').innerHTML=years.map(y=>`<option>${y}</option>`).join('');
+  $('#sp').innerHTML+=[...new Set(ACTS.map(a=>a.sport))].map(s=>`<option>${s}</option>`).join('');
+  $('#ld').innerHTML=LG.map((l,i)=>`<option value="${i}">${l.n}</option>`).join('');renderCounters();renderList();renderMedals();renderAvatar();renderEquip();
+  if(ACTS.length)show(String(ACTS[0].id));
+})();
+</script>
+</body>
+</html>
