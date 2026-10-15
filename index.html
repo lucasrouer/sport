@@ -6,20 +6,17 @@
 <title>Athlon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@500;700&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg: #0A0A0A;
     --panel: #141414;
     --panel-line: #232323;
     --ink: #F2F2F0;
-    --ink-soft: #9A9A96;
     --dim: #4E4E4B;
     --accent: #FF4B2B;
-    --accent-soft: rgba(255,75,43,0.14);
     --font-display: 'Rajdhani', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    --font-body: 'Work Sans', sans-serif;
   }
  
   *{ box-sizing: border-box; }
@@ -29,7 +26,7 @@
     padding:0;
     background: var(--bg);
     color: var(--ink);
-    font-family: var(--font-body);
+    font-family: var(--font-display), sans-serif;
     -webkit-font-smoothing: antialiased;
   }
  
@@ -38,7 +35,7 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding: clamp(2rem, 5vw, 4rem) clamp(1.1rem, 4vw, 2rem) 4rem;
+    padding: clamp(2.5rem, 7vw, 5rem) clamp(1.1rem, 4vw, 2rem) 4rem;
     position: relative;
     overflow-x: hidden;
   }
@@ -57,189 +54,43 @@
     z-index: 0;
   }
  
-  a{ color: inherit; }
- 
-  .page{ width: 100%; max-width: 980px; position: relative; z-index: 1; }
- 
-  header.masthead{
-    text-align:center;
-    margin-bottom: clamp(2.2rem, 5vw, 3rem);
-  }
-  .kicker{
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 0.85rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin: 0 0 0.8rem;
-  }
-  .kicker a{ text-decoration: none; border-bottom: 1px solid var(--dim); }
-  .kicker a:hover{ color: var(--accent); border-bottom-color: var(--accent); }
+  .page{ width: 100%; max-width: 620px; position: relative; z-index: 1; }
  
   h1{
-    font-family: var(--font-display);
     font-weight: 700;
     font-size: clamp(3rem, 9vw, 5rem);
     letter-spacing: 0.06em;
-    margin: 0 0 0.6rem;
+    margin: 0 0 clamp(2rem, 5vw, 3rem);
     line-height: 0.95;
+    text-align: center;
   }
   h1 span{ color: var(--accent); }
  
-  .lede{
-    font-size: 1rem;
-    color: var(--ink-soft);
-    max-width: 48ch;
-    margin: 0 auto;
-    line-height: 1.55;
-  }
- 
-  /* --- bandeau de records phares --- */
-  .highlights{
+  .links{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1px;
     background: var(--panel-line);
     border: 1px solid var(--panel-line);
-    margin: clamp(2rem, 5vw, 2.8rem) 0;
-  }
-  .highlight{
-    background: var(--panel);
-    padding: 1.1rem 1rem;
-    text-align: center;
-  }
-  .highlight .v{
-    display:block;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: clamp(1.3rem, 3vw, 1.7rem);
-    color: var(--accent);
-  }
-  .highlight .l{
-    display:block;
-    margin-top: 0.3rem;
-    font-family: var(--font-display);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
- 
-  /* --- panneaux par discipline --- */
-  .sport{
-    margin-top: 2.2rem;
-    border: 1px solid var(--panel-line);
-    background: var(--panel);
-  }
-  .sport-head{
-    display:flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.9rem 1.2rem;
-    border-bottom: 1px solid var(--panel-line);
-  }
-  .sport-head svg{ width: 22px; height: 22px; color: var(--accent); flex: none; }
-  .sport-head h2{
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.25rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    margin: 0;
-  }
- 
-  .stat-grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  }
-  .stat{
-    padding: 1.1rem 1.2rem;
-    border-right: 1px solid var(--panel-line);
-    border-top: 1px solid var(--panel-line);
-  }
-  .stat:nth-child(-n+99){ }
-  .stat-grid .stat:nth-child(1),
-  .stat-grid .stat:nth-child(2),
-  .stat-grid .stat:nth-child(3),
-  .stat-grid .stat:nth-child(4),
-  .stat-grid .stat:nth-child(5),
-  .stat-grid .stat:nth-child(6){ border-top: none; }
- 
-  .stat .tag{
-    display:inline-block;
-    font-family: var(--font-display);
-    font-size: 0.66rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--dim);
-    border: 1px solid var(--panel-line);
-    padding: 1px 7px;
-    margin-bottom: 0.5rem;
-  }
-  .stat .dist{
-    font-family: var(--font-display);
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    margin-bottom: 0.15rem;
-  }
-  .stat .time{
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--ink);
-  }
-  .stat.pending .time{ color: var(--dim); }
-  .stat.pending .dist{ color: var(--dim); }
- 
-  footer.colophon{
-    margin-top: 3rem;
-    text-align:center;
-    font-family: var(--font-display);
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--dim);
-  }
- 
-  /* --- liens vers les pages à venir --- */
-  .links-row{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1px;
-    background: var(--panel-line);
-    border: 1px solid var(--panel-line);
-    margin-top: 2.2rem;
   }
   .link-card{
     background: var(--panel);
-    padding: 1.3rem 1.4rem;
+    padding: 1.2rem 1.4rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     text-decoration: none;
+    color: var(--ink);
     transition: background 0.15s ease;
   }
   .link-card:hover{ background: #1a1a1a; }
   .link-card svg{ width: 26px; height: 26px; color: var(--accent); flex: none; }
-  .link-card .txt{ flex: 1; min-width: 0; }
   .link-card .t{
-    display: block;
-    font-family: var(--font-display);
+    flex: 1;
+    min-width: 0;
     font-weight: 600;
-    font-size: 1.05rem;
-    letter-spacing: 0.02em;
+    font-size: 1.1rem;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--ink);
-  }
-  .link-card .d{
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-    line-height: 1.4;
   }
   .link-card .go{
     flex: none;
@@ -249,143 +100,50 @@
     transition: color 0.15s ease, transform 0.15s ease;
   }
   .link-card:hover .go{ color: var(--accent); transform: translateX(3px); }
- 
-  @media (max-width: 560px){
-    .stat{ border-right: none; }
-    .stat-grid .stat:nth-child(2n){ }
-  }
 </style>
 </head>
 <body>
  
 <div class="page">
-  <header class="masthead">
-    <p class="kicker"><a href="https://lucasrouer.github.io/atlas-facettes/">Atlas des facettes</a> — sport, trail, running</p>
-    <h1>ATH<span>LON</span></h1>
-    <p class="lede">Les chronos, les distances, les objectifs qui restent à courir.</p>
-  </header>
+  <h1>ATH<span>LON</span></h1>
  
-  <div class="highlights">
-    <div class="highlight"><span class="v">82 km</span><span class="l">Ultra — distance max</span></div>
-    <div class="highlight"><span class="v">39:53</span><span class="l">10 km — record</span></div>
-    <div class="highlight"><span class="v">17,5</span><span class="l">VMA (km/h)</span></div>
-    <div class="highlight"><span class="v">125 km</span><span class="l">Vélo — distance max</span></div>
-  </div>
- 
-  <!-- Course à pied -->
-  <section class="sport">
-    <div class="sport-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4.5" r="1.6"/><path d="M9 21l2.5-5 3-2-1-4-3.5 1-2-3M12 14l3 1 3 5"/></svg>
-      <h2>Course à pied</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat"><p class="dist">5 km</p><p class="time">19:16</p></div>
-      <div class="stat"><p class="dist">10 km</p><p class="time">39:53</p></div>
-      <div class="stat"><p class="dist">Semi · 21 km</p><p class="time">1:42:27</p></div>
-      <div class="stat"><p class="dist">Marathon · 42 km</p><p class="time">3:54:59</p></div>
-      <div class="stat"><p class="dist">Distance max</p><p class="time">82 km</p></div>
-      <div class="stat"><p class="dist">VMA</p><p class="time">17,5 <span style="font-size:0.9rem;color:var(--ink-soft)">km/h</span></p></div>
-      <div class="stat pending"><span class="tag">à venir</span><p class="dist">VO2 max</p><p class="time">—</p></div>
-    </div>
-  </section>
- 
-  <!-- Vélo -->
-  <section class="sport">
-    <div class="sport-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M5.5 17.5L10 8h4l3 4.5M9 12h6"/></svg>
-      <h2>Vélo</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat"><span class="tag">Sprint</span><p class="dist">20 km</p><p class="time">32:24</p></div>
-      <div class="stat"><span class="tag">M</span><p class="dist">40 km</p><p class="time">1:30:13</p></div>
-      <div class="stat"><span class="tag">70.3</span><p class="dist">90 km</p><p class="time">4:04:48</p></div>
-      <div class="stat pending"><span class="tag">Ironman</span><p class="dist">180 km</p><p class="time">—</p></div>
-      <div class="stat"><p class="dist">Distance max</p><p class="time">125 km</p></div>
-    </div>
-  </section>
- 
-  <!-- Natation -->
-  <section class="sport">
-    <div class="sport-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="6.5" r="1.6"/><path d="M2 12l3-2 3 2 3-2 3 2 3-2 3 2 4-2M2 17l3-2 3 2 3-2 3 2 3-2 3 2 4-2"/></svg>
-      <h2>Natation</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat pending"><span class="tag">Sprint</span><p class="dist">500 m</p><p class="time">—</p></div>
-      <div class="stat pending"><span class="tag">M</span><p class="dist">1000 m</p><p class="time">—</p></div>
-      <div class="stat pending"><span class="tag">70.3</span><p class="dist">1900 m</p><p class="time">—</p></div>
-      <div class="stat pending"><span class="tag">Ironman</span><p class="dist">3800 m</p><p class="time">—</p></div>
-      <div class="stat"><p class="dist">Distance max</p><p class="time">1000 m</p></div>
-    </div>
-  </section>
- 
-  <!-- Kayak -->
-  <section class="sport">
-    <div class="sport-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="9.5" ry="3.2" transform="rotate(-25 12 12)"/><path d="M4 6l16 12M6 4l1.8 1.8M16.2 18.2L18 20"/></svg>
-      <h2>Kayak</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat pending"><p class="dist">Distance max (rivière)</p><p class="time">—</p></div>
-      <div class="stat pending"><p class="dist">Distance max (mer)</p><p class="time">—</p></div>
-    </div>
-  </section>
- 
-  <!-- Ski de randonnée -->
-  <section class="sport">
-    <div class="sport-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l7-13 4 6-3 7M14 7l7 13M9 3l3 2-2 3"/></svg>
-      <h2>Ski de randonnée</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat pending"><p class="dist">Distance max</p><p class="time">—</p></div>
-      <div class="stat pending"><p class="dist">Dénivelé max</p><p class="time">—</p></div>
-    </div>
-  </section>
- 
-  <!-- Triathlon -->
-  <section class="sport">
-    <div class="sport-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.3"/><circle cx="12" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><path d="M3 20l3-8 3 8M9 20l3-8 3 8M15 20l3-8 3 8"/></svg>
-      <h2>Triathlon</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat pending"><span class="tag">S</span><p class="dist">Sprint</p><p class="time">—</p></div>
-      <div class="stat pending"><span class="tag">M</span><p class="dist">Olympique</p><p class="time">—</p></div>
-      <div class="stat pending"><span class="tag">70.3</span><p class="dist">Half</p><p class="time">—</p></div>
-      <div class="stat pending"><span class="tag">Iron</span><p class="dist">Ironman</p><p class="time">—</p></div>
-    </div>
-  </section>
- 
-  <!-- Liens vers les pages à venir -->
-  <div class="links-row">
+  <nav class="links">
     <a class="link-card" href="carnet.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M16 3v3h3M8 10h8M8 13.5h8M8 17h5"/></svg>
-      <span class="txt">
-        <span class="t">Carnet de course et entraînements</span>
-        <span class="d">Le journal des séances et des courses, au fil des semaines.</span>
-      </span>
+      <span class="t">Carnet de course et entraînements</span>
       <span class="go">→</span>
     </a>
+ 
     <a class="link-card" href="materiel.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3L5.6 5.6"/></svg>
-      <span class="txt">
-        <span class="t">Matériel</span>
-        <span class="d">Chaussures, montre, vélo, combinaison — par discipline.</span>
-      </span>
+      <span class="t">Matériel</span>
       <span class="go">→</span>
     </a>
-    <a class="link-card" href="entrainements.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3L5.6 5.6"/></svg>
-      <span class="txt">
-        <span class="t">Entraînements</span>
-        <span class="d">Sorties, cartes, ligues et médailles</span>
-      </span>
-      <span class="go">→</span>
-    </a>
-  </div>
  
-  <footer class="colophon">Une facette de l'Atlas des facettes.</footer>
+    <a class="link-card" href="entrainements.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4.5" r="1.6"/><path d="M9 21l2.5-5 3-2-1-4-3.5 1-2-3M12 14l3 1 3 5"/></svg>
+      <span class="t">Entraînements</span>
+      <span class="go">→</span>
+    </a>
+ 
+    <a class="link-card" href="https://jsilobre.github.io/spot-fractionne/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0113 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
+      <span class="t">Outil Spots</span>
+      <span class="go">↗</span>
+    </a>
+ 
+    <a class="link-card" href="https://app.sisyf.com/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V5M4 20h16"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+      <span class="t">Outil Plan de course</span>
+      <span class="go">↗</span>
+    </a>
+ 
+    <a class="link-card" href="https://www.strava.com/athletes/49995193" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20l5-10 5 10M12 10l-3-6-4 8"/></svg>
+      <span class="t">Strava</span>
+      <span class="go">↗</span>
+    </a>
+  </nav>
 </div>
  
 </body>
